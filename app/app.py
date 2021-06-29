@@ -102,3 +102,6 @@ def exception_handler(e):
     })
     res.content_type = "application/json"
     return res
+
+if __name__ == '__main__':
+    app.run()
