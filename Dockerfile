@@ -12,7 +12,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 # Set flask FLASK_APP:app:name
-ENV FLASK_APP=app/app.py
+ENV FLASK_APP=app/wsgi.py
 
 # Set flask FLASK_ENV:env
 ENV FLASK_ENV=development
