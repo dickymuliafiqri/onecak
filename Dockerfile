@@ -14,6 +14,9 @@ ENV PYTHONUNBUFFERED=1
 # Set flask FLASK_APP:app:name
 ENV FLASK_APP=app/app.py
 
+# Set flask FLASK_ENV:env
+ENV FLASK_ENV=development
+
 # Install pip requirements
 COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
