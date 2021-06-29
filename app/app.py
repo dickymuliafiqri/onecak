@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup as bs
 from markupsafe import escape
 from flask import Flask, jsonify
+from werkzeug.exceptions import HTTPException
 import requests
 import re
 import json
@@ -10,16 +11,15 @@ app = Flask(__name__)
 baseUrl = 'https://1cak.com'
 page = {
     "lol": "lol",
-    "trend": "trend",
+    "trend": "trending",
     "legend": "legendary",
     "shuffle": "shuffle"
 }
 
 def onecak(onecakPage):
-    listPost = []
+    postList = []
     url = '{}/{}'.format(baseUrl, onecakPage)
     page = requests.get(url)
-    print(page.status_code)
     if not page.status_code == 200: raise Exception(page.status_code)
     content = page.content
     soup = bs(content, 'html.parser')
@@ -29,11 +29,6 @@ def onecak(onecakPage):
         postUrl = baseUrl + postId
         postSrc = i.a.img['src']
         if re.search(r'unsave', postSrc): continue
-        try:
-            for x in len(listPost):
-                if listPost[x].id == postId: continue
-        except (AttributeError, TypeError):
-            pass
 
         data = {
             "id": postId,
@@ -41,8 +36,33 @@ def onecak(onecakPage):
             "url": postUrl,
             "src": postSrc
         }
-        listPost.append(data)
-    return listPost
+        postList.append(data)
+    return postList
+
+def onecakShuffle():
+    postList = []
+    post = ''
+    url = '{}/shuffle/'.format(baseUrl)
+    while True:
+        page = requests.get(url)
+        if not page.status_code == 200: raise Exception(page.status_code)
+        content = page.content
+        soup = bs(content, 'html.parser')
+        post = soup.find('div', id=re.compile(r'posts'))
+        post = post.table.tr.td.img
+        if not re.search(r'unsave', post['src']): break
+    postId = page.url.replace('https://1cak.com', '')
+    postTitle = post['title']
+    postUrl = page.url
+    postSrc = post['src']
+    data = {
+        "id": postId,
+        "title": postTitle,
+        "url": postUrl,
+        "src": postSrc
+    }
+    postList.append(data)
+    return postList
 
 @app.route('/', methods=['GET'])
 def welcome():
@@ -53,69 +73,35 @@ def welcome():
         "sourcecode": "https://github.com/dickymuliafiqri/onecak"
     })
 
-@app.route('/<onecakPage>/', methods=['GET'])
+@app.route('/<string:onecakPage>/', methods=['GET'])
 def scrape(onecakPage):
     selPage = page[escape(onecakPage)]
+    getOneCak = ''
     try:
-        getOneCak = onecak(selPage)
+        if selPage == 'shuffle':
+            getOneCak = onecakShuffle()
+        else:
+            getOneCak = onecak(selPage)
         return jsonify({
-            "url": "{}/{}".format(baseUrl, selPage),
-            "posts": getOneCak,
-            "length": len(getOneCak)
+            "length": len(getOneCak),
+            "posts": getOneCak
         })
-        # onecak(selPage)
     except Exception as err:
         return jsonify({
-            "Error": err
+            "error": err
         })
 
-@app.errorhandler(400)
-def notFound(e):
-    return jsonify({
-        "Error": "400 Bad Request"
-    })
 
-@app.errorhandler(404)
-def notFound(e):
-    return jsonify({
-        "Error": "404 Not Found"
+@app.errorhandler(HTTPException)
+def exception_handler(e):
+    res = e.get_response()
+    res.data = json.dumps({
+        "code": e.code,
+        "name": e.name,
+        "description": e.description
     })
-
-@app.errorhandler(405)
-def notFound(e):
-    return jsonify({
-        "Error": "405 Method Not Allowed"
-    })
-
-@app.errorhandler(408)
-def notFound(e):
-    return jsonify({
-        "Error": "408 Request Timeout"
-    })
-
-@app.errorhandler(500)
-def notFound(e):
-    return jsonify({
-        "Error": "500 Internal Server Error"
-    })
-
-@app.errorhandler(502)
-def notFound(e):
-    return jsonify({
-        "Error": "502 Bad Gateway"
-    })
-
-@app.errorhandler(503)
-def notFound(e):
-    return jsonify({
-        "Error": "503 Service Unavailable"
-    })
-
-@app.errorhandler(504)
-def notFound(e):
-    return jsonify({
-        "Error": "504 Gateway Timeout"
-    })
+    res.content_type = "application/json"
+    return res
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=50000)
