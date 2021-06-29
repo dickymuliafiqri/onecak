@@ -5,8 +5,10 @@ from werkzeug.exceptions import HTTPException
 import requests
 import re
 import json
+import os
 
 app = Flask(__name__)
+port = int(os.environ.get("PORT", 5000))
 
 baseUrl = 'https://1cak.com'
 page = {
@@ -104,4 +106,4 @@ def exception_handler(e):
     return res
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True, host="0.0.0.0", port=port)
