@@ -74,7 +74,7 @@ if __name__ == '__main__':
         database['lastscan'] = i
         with open('./api/onecak.json', 'w') as outfile:
             outfile.write(json.dumps(database, indent=4))
-        if x == 5000: break
+        if x >= 5000: break
         sleep(1)
     print('\n\n#####')
     print('Recent post: {}'.format(recent))
