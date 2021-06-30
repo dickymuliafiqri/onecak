@@ -17,19 +17,18 @@ def onecak(postId):
     post = ''
     nsfw = False
 
-    while True:
-        page = requests.get('{}{}'.format(baseUrl, postId), cookies=session)
-        if not page.status_code == 200: raise Exception(page.status_code)
-        content = page.content
-        soup = bs(content, 'html.parser')
-        try:
-            post = soup.find('div', id=re.compile(r'posts'))
-            post = post.table.tr.td.img
-            nsfw = soup.find('img', src=re.compile(r'nsfw'))
-            nsfw = True if nsfw else False
-        except AttributeError:
-            err = soup.find('img', src=re.compile(r'error'))
-            if err: raise Exception(404)
+    page = requests.get('{}{}'.format(baseUrl, postId), cookies=session)
+    if not page.status_code == 200: raise Exception(page.status_code)
+    content = page.content
+    soup = bs(content, 'html.parser')
+    try:
+        post = soup.find('div', id=re.compile(r'posts'))
+        post = post.table.tr.td.img
+        nsfw = soup.find('img', src=re.compile(r'nsfw'))
+        nsfw = True if nsfw else False
+    except AttributeError:
+        err = soup.find('img', src=re.compile(r'error'))
+        if err: raise Exception(404)
 
     postTitle = post['title']
     postUrl = page.url
