@@ -8,20 +8,28 @@ baseUrl = 'https://1cak.com/'
 database = json.load(open('./api/onecak.json'))
 postList = database['posts']
 
+session = {
+    "sess_str": "25014de81886067dd4a7ebcfa6de9c8d",
+    "sess_user_id": "1596365"
+}
+
 def onecak(postId):
     post = ''
+    nsfw = False
+
     while True:
-        page = requests.get('{}{}'.format(baseUrl, postId))
+        page = requests.get('{}{}'.format(baseUrl, postId), cookies=session)
         if not page.status_code == 200: raise Exception(page.status_code)
         content = page.content
         soup = bs(content, 'html.parser')
         try:
             post = soup.find('div', id=re.compile(r'posts'))
             post = post.table.tr.td.img
+            nsfw = soup.find('img', src=re.compile(r'nsfw'))
+            nsfw = True if nsfw else False
         except AttributeError:
             err = soup.find('img', src=re.compile(r'error'))
             if err: raise Exception(404)
-        if not re.search(r'unsave', post['src']): break
 
     postTitle = post['title']
     postUrl = page.url
@@ -30,7 +38,8 @@ def onecak(postId):
         "id": postId,
         "title": postTitle,
         "url": postUrl,
-        "src": postSrc
+        "src": postSrc,
+        "nsfw": nsfw
     }
     postList.append(data)
 
@@ -41,6 +50,7 @@ if __name__ == '__main__':
     recent = recent.json()
     recent = int(recent['posts'][0]['id'])
     database['lastpost'] = recent
+
     while True:
         if recent == i: break
         indexed = 0
