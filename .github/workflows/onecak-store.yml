@@ -30,7 +30,7 @@ jobs:
         pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Run script
-      run: python3 ./src/getter.py
+      run: python3 ./app/getter.py
     - name: Add & Commit
       uses: EndBug/add-and-commit@v7.2.1
       with:
