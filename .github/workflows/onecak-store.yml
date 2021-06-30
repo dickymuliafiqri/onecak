@@ -36,5 +36,5 @@ jobs:
       if: ${{ always() }}
       uses: EndBug/add-and-commit@v7.2.1
       with:
-        add: "*./api/onecak.json"
+        add: ./api/onecak.json
         default_author: github_actions
