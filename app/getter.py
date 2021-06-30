@@ -42,15 +42,23 @@ if __name__ == '__main__':
     recent = int(recent['posts'][0]['id'])
     database['lastpost'] = recent
     while True:
+        if recent == i: break
+        indexed = 0
         try:
-            if database['posts'][len(postList)-500]['id'] == i: raise Exception('Already indexed')
+            for indx in range(500):
+                try:
+                    if database['posts'][len(postList)-indx]['id'] == i: 
+                        indexed = 1
+                        break
+                except IndexError:
+                    pass
+            if indexed: raise Exception('Already indexed')
             onecak(i)
             print('Success: {}{}'.format(baseUrl, i))
         except Exception as err:
             print('Failed: {}{} - {}'.format(baseUrl, i, err))
             pass
-        except IndexError:
-            pass
+
         i+=1
         x+=1
         database['length'] = len(postList)

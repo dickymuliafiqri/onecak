@@ -5,7 +5,8 @@ name: Onecak Store
 
 on:
   workflow_dispatch:
-
+  repository_dispatch:
+    types: "onecak"
 jobs:
   build:
 
@@ -32,6 +33,7 @@ jobs:
     - name: Run script
       run: python3 ./app/getter.py
     - name: Add & Commit
+      if: ${{ always() }}
       uses: EndBug/add-and-commit@v7.2.1
       with:
         add: "*./api/onecak.json"
