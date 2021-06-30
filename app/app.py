@@ -10,7 +10,7 @@ import os
 app = Flask(__name__)
 port = int(os.environ.get("PORT", 5000))
 
-baseUrl = 'https://1cak.com'
+baseUrl = 'https://1cak.com/'
 page = {
     "lol": "lol",
     "trend": "trending",
@@ -20,13 +20,13 @@ page = {
 
 def onecak(onecakPage):
     postList = []
-    url = '{}/{}'.format(baseUrl, onecakPage)
+    url = '{}{}'.format(baseUrl, onecakPage)
     page = requests.get(url)
     if not page.status_code == 200: raise Exception(page.status_code)
     content = page.content
     soup = bs(content, 'html.parser')
     for i in soup.findAll('div', id=re.compile(r'img_container')):
-        postId = i.a['href']
+        postId = (i.a['href']).replace('/', '')
         postTitle = i.a.img['title']
         postUrl = baseUrl + postId
         postSrc = i.a.img['src']
@@ -44,7 +44,7 @@ def onecak(onecakPage):
 def onecakShuffle():
     postList = []
     post = ''
-    url = '{}/shuffle/'.format(baseUrl)
+    url = '{}shuffle/'.format(baseUrl)
     while True:
         page = requests.get(url)
         if not page.status_code == 200: raise Exception(page.status_code)
@@ -53,7 +53,7 @@ def onecakShuffle():
         post = soup.find('div', id=re.compile(r'posts'))
         post = post.table.tr.td.img
         if not re.search(r'unsave', post['src']): break
-    postId = page.url.replace('https://1cak.com', '')
+    postId = page.url.replace('https://1cak.com/', '')
     postTitle = post['title']
     postUrl = page.url
     postSrc = post['src']
