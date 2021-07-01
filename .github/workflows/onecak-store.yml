@@ -5,8 +5,8 @@ name: Onecak Store
 
 on:
   workflow_dispatch:
-  repository_dispatch:
-    types: "onecak"
+  # repository_dispatch:
+  #   types: "onecak"
 jobs:
   build:
 
