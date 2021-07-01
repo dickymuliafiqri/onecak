@@ -11,8 +11,8 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # Turns off buffering for easier container logging
 ENV PYTHONUNBUFFERED=1
 
-# Set flask FLASK_APP:app:name
-ENV FLASK_APP=app/app:app
+# Set flask FLASK_APP=appdir:appname
+ENV FLASK_APP=app/app:onecak
 
 # Set flask FLASK_ENV:env
 ENV FLASK_ENV=development

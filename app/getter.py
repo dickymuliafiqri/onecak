@@ -5,7 +5,7 @@ import re
 import json
 
 baseUrl = 'https://1cak.com/'
-database = json.load(open('./api/onecak.json'))
+database = json.load(open('./database/onecak.json'))
 postList = database['posts']
 
 session = {
@@ -13,42 +13,71 @@ session = {
     "sess_user_id": "1596365"
 }
 
+def getRecent():
+    url = 'https://1cak.com/lol/'
+    page = requests.get(url, cookies=session)
+    if not page.status_code == 200: raise Exception(page.status_code)
+    content = page.content
+    soup = bs(content, 'html.parser')
+    recent = soup.find('a', target="_blank")
+    postId = (recent['href']).replace('/', '')
+    return int(postId)
+
 def onecak(postId):
     post = ''
     nsfw = False
+    gif = False
 
     page = requests.get('{}{}'.format(baseUrl, postId), cookies=session)
     if not page.status_code == 200: raise Exception(page.status_code)
     content = page.content
     soup = bs(content, 'html.parser')
     try:
-        post = soup.find('div', id=re.compile(r'posts'))
-        post = post.table.tr.td.img
+        posts = soup.find('div', id=re.compile(r'posts'))
+        posts = posts.table.tr.td
+        post = posts.img
+        try:
+            post['title']
+        except KeyError:
+            post = None
+            pass
+
+        if not post:
+            post = posts.iframe
+            gif = True
         nsfw = soup.find('img', src=re.compile(r'nsfw'))
         nsfw = True if nsfw else False
     except AttributeError:
         err = soup.find('img', src=re.compile(r'error'))
         if err: raise Exception(404)
 
-    postTitle = post['title']
     postUrl = page.url
     postSrc = post['src']
+    postTitle = ''
+    if gif:
+        gifTitle = posts.div.h3
+        postTitle = gifTitle.string
+    else:
+        postTitle = post['title']
+
     data = {
         "id": postId,
         "title": postTitle,
         "url": postUrl,
         "src": postSrc,
+        "gif": gif,
         "nsfw": nsfw
     }
     postList.append(data)
 
 if __name__ == '__main__':
     x = 0
-    i = database['lastscan']
-    recent = requests.get('https://onecak.herokuapp.com/lol/')
-    recent = recent.json()
-    recent = int(recent['posts'][0]['id'])
-    database['lastpost'] = recent
+    i = database['lastscan'] + 1
+    try:
+        recent = getRecent()
+        database['lastpost'] = recent
+    except Exception:
+        pass
 
     while True:
         if recent == i: break
@@ -72,7 +101,7 @@ if __name__ == '__main__':
         x+=1
         database['length'] = len(postList)
         database['lastscan'] = i
-        with open('./api/onecak.json', 'w') as outfile:
+        with open('./database/onecak.json', 'w') as outfile:
             outfile.write(json.dumps(database, indent=4))
         if x >= 5000: break
         sleep(1)
