@@ -28,7 +28,6 @@ class OnecakAPI(Resource):
         shuffle = int(shuffle) if type(shuffle) == type('str') else shuffle
 
         if lol:
-            print('Lol')
             for indx in range(length-1, length-11, -1):
                 result.append(posts[indx])
             return jsonify({
@@ -38,7 +37,6 @@ class OnecakAPI(Resource):
             })
         
         elif shuffle:
-            print('Shuffle')
             if shuffle > 10:
                 return jsonify({
                     "message": "max entity is 10"
