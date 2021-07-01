@@ -14,8 +14,43 @@ lastPost = database['lastpost']
 lastScan = database['lastscan']
 posts = database['posts']
 
-class Home(Resource):
+class OnecakAPI(Resource):
+    def __init__(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('lol')
+        parser.add_argument('shuffle')
+        self.args = parser.parse_args()
+
     def get(self):
+        result = []
+        lol = None if self.args['lol'] == None else 1
+        shuffle = 1 if self.args['shuffle'] == '' else self.args['shuffle']
+        shuffle = int(shuffle) if type(shuffle) == type('str') else shuffle
+
+        if lol:
+            print('Lol')
+            for indx in range(length-1, length-11, -1):
+                result.append(posts[indx])
+            return jsonify({
+                "length": len(result),
+                "posts": result,
+                "lastpost": lastPost
+            })
+        
+        elif shuffle:
+            print('Shuffle')
+            if shuffle > 10:
+                return jsonify({
+                    "message": "max entity is 10"
+                })
+            for i in range(shuffle):
+                result.append(posts[randint(0, length-1)])
+            return jsonify({
+                "length": len(result),
+                "posts": result,
+                "lastpost": lastPost
+            })
+
         return jsonify({
             "name": "onecak",
             "credit": "https://1cak.com",
@@ -23,42 +58,7 @@ class Home(Resource):
             "sourcecode": "https://github.com/dickymuliafiqri/onecak"
         })
 
-class OneCakShuffle(Resource):
-    def __init__(self):
-        parser = reqparse.RequestParser()
-        parser.add_argument('entity')
-        self.args = parser.parse_args()
-
-    def get(self):
-        result = []
-        entity = self.args['entity'] if self.args['entity'] else 1
-        if type(entity) != type(1): entity = int(entity.replace('/', ''))
-        if entity > 10:
-            return jsonify({
-                "message": "max entity is 10"
-            })
-        for i in range(entity):
-            result.append(posts[randint(0, length-1)])
-        return jsonify({
-            "length": len(result),
-            "posts": result,
-            "lastpost": lastPost
-        })
-
-class OneCakLol(Resource):
-    def get(self):
-        result = []
-        for indx in range(length-1, length-11, -1):
-            result.append(posts[indx])
-        return jsonify({
-            "length": len(result),
-            "posts": result,
-            "lastpost": lastPost
-        })
-
-api.add_resource(Home, '/')
-api.add_resource(OneCakShuffle, '/shuffle/')
-api.add_resource(OneCakLol, '/lol/')
+api.add_resource(OnecakAPI, '/')
 
 @onecak.errorhandler(HTTPException)
 def exception_handler(e):
