@@ -31,6 +31,7 @@ class OnecakAPI(Resource):
         if lol:
             for indx in range(self.length, self.length-10, -1):
                 data = self.database.run_command(crud.posts_get, (str(indx),))
+                data = json.loads(data)
                 result.append(data)
             return jsonify({
                 "length": len(result),
