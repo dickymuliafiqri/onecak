@@ -63,16 +63,7 @@ def onecak(postId):
     else:
         postTitle = post['title']
 
-    data = {
-        "id": postId,
-        "title": postTitle,
-        "url": postUrl,
-        "src": postSrc,
-        "gif": gif,
-        "nsfw": nsfw
-    }
-    data = """INSERT INTO posts(json_value) VALUES(json('{}'))""".format(json.dumps(data))
-    database.run_command(data)
+    database.run_command(crud.post_insert, (postId, postTitle, postUrl, postSrc, gif, nsfw))
 
 def main():
     recent = None

@@ -5,7 +5,12 @@ db_file = './database/onecak.db'
 
 posts_table = '''CREATE TABLE IF NOT EXISTS posts(
                 id integer PRIMARY KEY AUTOINCREMENT,
-                json_value text NOT NULL
+                post_id integer NOT NULL,
+                title text NOT NULL,
+                url text NOT NULL,
+                src text NOT NULL,
+                is_gif integer NOT NULL,
+                is_nsfw integer NOT NULL
                 );'''
 
 tasks_table = '''CREATE TABLE IF NOT EXISTS tasks(
@@ -16,9 +21,14 @@ tasks_table = '''CREATE TABLE IF NOT EXISTS tasks(
                 );'''
 
 post_insert = '''INSERT INTO posts(
-        json_value)
+        post_id,
+        title,
+        url,
+        src,
+        is_gif,
+        is_nsfw)
         VALUES(
-            ?
+            ?, ?, ?, ?, ?, ?
         )'''
 
 task_insert = '''INSERT INTO tasks(
@@ -30,7 +40,12 @@ task_insert = '''INSERT INTO tasks(
         )'''
 
 posts_update = '''UPDATE posts SET
-                json_value = ?
+                post_id = ?,
+                title = ?,
+                url = ?,
+                src = ?,
+                is_gif = ?,
+                is_nsfw = ?
                 WHERE id = ?
                 '''
 
@@ -48,6 +63,19 @@ task_delete = '''DELETE FROM tasks WHERE id = ?'''
 posts_length = '''SELECT COUNT(*) FROM posts'''
 
 tasks_length = '''SELECT COUNT(*) FROM tasks'''
+
+posts_get = '''SELECT json_group_array(json_object('id', post_id,
+                                'title', title,
+                                'url', url,
+                                'src', src,
+                                'gif', is_gif,
+                                'nsfw', is_nsfw))
+                                AS json_result FROM (SELECT * FROM posts WHERE id = ?)'''
+
+tasks_get = '''SELECT json_group_array(json_object('recent_post', recent_post,
+                                'last_scan', last_scan,
+                                'length', database_length))
+                                AS json_result FROM (SELECT * FROM tasks WHERE id = 1)'''
 
 class OnecakDB():
     def __init__(self):
@@ -82,4 +110,3 @@ class OnecakDB():
         self.conn.commit()
         if result is not None:
             return result[0]
-        return result

@@ -13,13 +13,14 @@ port = int(os.environ.get("PORT", 5000))
 class OnecakAPI(Resource):
     def __init__(self):
         self.database = crud.OnecakDB()
-        self.length = self.database.run_command('''SELECT database_length FROM tasks''')
-        self.lastPost = self.database.run_command('''SELECT recent_post FROM tasks''')
-        self.lastScan = self.database.run_command('''SELECT last_scan FROM tasks''')
-        parser = reqparse.RequestParser()
-        parser.add_argument('lol')
-        parser.add_argument('shuffle')
-        self.args = parser.parse_args()
+        self.tasks = json.loads(self.database.run_command(crud.tasks_get))[0]
+        self.length = self.tasks['length']
+        self.lastPost = self.tasks['recent_post']
+        self.lastScan = self.tasks['last_scan']
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('lol')
+        self.parser.add_argument('shuffle')
+        self.args = self.parser.parse_args()
 
     def get(self):
         result = []
@@ -29,7 +30,7 @@ class OnecakAPI(Resource):
 
         if lol:
             for indx in range(self.length, self.length-10, -1):
-                data = self.database.run_command('SELECT json_value FROM posts WHERE id = {}'.format(indx))
+                data = self.database.run_command(crud.posts_get, (str(indx),))
                 result.append(data)
             return jsonify({
                 "length": len(result),
@@ -44,8 +45,10 @@ class OnecakAPI(Resource):
                 })
             loop = 0
             while True:
-                data = self.database.run_command('SELECT json_value FROM posts WHERE id = {}'.format(randint(1, self.length)))
-                result.append(data)
+                random = randint(1, self.length)
+                data = self.database.run_command(crud.posts_get, (str(random),))
+                data = json.loads(data)
+                result.append(data[0])
                 loop += 1
                 if loop >= shuffle: break
             return jsonify({
@@ -58,7 +61,12 @@ class OnecakAPI(Resource):
             "name": "onecak",
             "credit": "https://1cak.com",
             "license": "MIT",
-            "sourcecode": "https://github.com/dickymuliafiqri/onecak"
+            "sourcecode": "https://github.com/dickymuliafiqri/onecak",
+            "stats":{
+                "recent post": self.lastPost,
+                "last scan": self.lastScan,
+                "post recorded": self.length
+            }
         })
 
 api.add_resource(OnecakAPI, '/')
