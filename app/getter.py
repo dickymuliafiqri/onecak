@@ -1,111 +1,78 @@
-from bs4 import BeautifulSoup as bs
-from time import sleep
-import requests
-import re
+from flask import Flask, jsonify
+from random import randint
+from flask_restful import reqparse, Api, Resource
+from werkzeug.exceptions import HTTPException
 import json
+import os
+import crud
 
-baseUrl = 'https://1cak.com/'
-database = json.load(open('./database/onecak.json'))
-postList = database['posts']
+onecak = Flask(__name__)
+api = Api(onecak)
+port = int(os.environ.get("PORT", 5000))
 
-session = {
-    "sess_str": "25014de81886067dd4a7ebcfa6de9c8d",
-    "sess_user_id": "1596365"
-}
+class OnecakAPI(Resource):
+    def __init__(self):
+        self.database = crud.OnecakDB()
+        self.length = self.database.run_command('''SELECT database_length FROM tasks''')
+        self.lastPost = self.database.run_command('''SELECT recent_post FROM tasks''')
+        self.lastScan = self.database.run_command('''SELECT last_scan FROM tasks''')
+        parser = reqparse.RequestParser()
+        parser.add_argument('lol')
+        parser.add_argument('shuffle')
+        self.args = parser.parse_args()
 
-def getRecent():
-    url = 'https://1cak.com/lol/'
-    page = requests.get(url, cookies=session)
-    if not page.status_code == 200: raise Exception(page.status_code)
-    content = page.content
-    soup = bs(content, 'html.parser')
-    recent = soup.find('a', target="_blank")
-    postId = (recent['href']).replace('/', '')
-    return int(postId)
+    def get(self):
+        result = []
+        lol = None if self.args['lol'] == None else 1
+        shuffle = 1 if self.args['shuffle'] == '' else self.args['shuffle']
+        shuffle = int(shuffle) if type(shuffle) == type('str') else shuffle
 
-def onecak(postId):
-    post = ''
-    nsfw = False
-    gif = False
+        if lol:
+            for indx in range(self.length, self.length-10, -1):
+                data = self.database.run_command('SELECT json_value FROM posts WHERE id = {}'.format(indx))
+                result.append(data)
+            return jsonify({
+                "length": len(result),
+                "posts": result,
+                "lastpost": self.lastPost
+            })
+        
+        elif shuffle:
+            if shuffle > 10:
+                return jsonify({
+                    "message": "max entity is 10"
+                })
+            loop = 0
+            while True:
+                data = self.database.run_command('SELECT json_value FROM posts WHERE id = {}'.format(randint(1, self.length)))
+                result.append(data)
+                loop += 1
+                if loop >= shuffle: break
+            return jsonify({
+                "length": len(result),
+                "posts": result,
+                "lastpost": self.lastPost
+            })
 
-    page = requests.get('{}{}'.format(baseUrl, postId), cookies=session)
-    if not page.status_code == 200: raise Exception(page.status_code)
-    content = page.content
-    soup = bs(content, 'html.parser')
-    try:
-        posts = soup.find('div', id=re.compile(r'posts'))
-        posts = posts.table.tr.td
-        post = posts.img
-        try:
-            post['title']
-        except KeyError:
-            post = None
-            pass
+        return jsonify({
+            "name": "onecak",
+            "credit": "https://1cak.com",
+            "license": "MIT",
+            "sourcecode": "https://github.com/dickymuliafiqri/onecak"
+        })
 
-        if not post:
-            post = posts.iframe
-            gif = True
-        nsfw = soup.find('img', src=re.compile(r'nsfw'))
-        nsfw = True if nsfw else False
-    except AttributeError:
-        err = soup.find('img', src=re.compile(r'error'))
-        if err: raise Exception(404)
+api.add_resource(OnecakAPI, '/')
 
-    postUrl = page.url
-    postSrc = post['src']
-    postTitle = ''
-    if gif:
-        gifTitle = posts.div.h3
-        postTitle = gifTitle.string
-    else:
-        postTitle = post['title']
-
-    data = {
-        "id": postId,
-        "title": postTitle,
-        "url": postUrl,
-        "src": postSrc,
-        "gif": gif,
-        "nsfw": nsfw
-    }
-    postList.append(data)
+@onecak.errorhandler(HTTPException)
+def exception_handler(e):
+    res = e.get_response()
+    res.data = json.dumps({
+        "code": e.code,
+        "name": e.name,
+        "description": e.description
+    })
+    res.content_type = "application/json"
+    return res
 
 if __name__ == '__main__':
-    x = 0
-    i = database['lastscan'] + 1
-    try:
-        recent = getRecent()
-        database['lastpost'] = recent
-    except Exception:
-        pass
-
-    while True:
-        if recent == i: break
-        indexed = 0
-        try:
-            for indx in range(500):
-                try:
-                    if database['posts'][len(postList)-indx]['id'] == i: 
-                        indexed = 1
-                        break
-                except IndexError:
-                    pass
-            if indexed: raise Exception('Already indexed')
-            onecak(i)
-            print('Success: {}{}'.format(baseUrl, i))
-        except Exception as err:
-            print('Failed: {}{} - {}'.format(baseUrl, i, err))
-            pass
-
-        i+=1
-        x+=1
-        database['length'] = len(postList)
-        database['lastscan'] = i
-        with open('./database/onecak.json', 'w') as outfile:
-            outfile.write(json.dumps(database, indent=4))
-        if x >= 1000: break
-        sleep(1)
-    print('\n\n#####')
-    print('Recent post: {}'.format(recent))
-    print('Total post: {}'.format(len(postList)))
-    print('Process ended')
+    onecak.run(debug=False, host="0.0.0.0", port=port)

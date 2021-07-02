@@ -20,7 +20,7 @@
 			],
 			"dockerRun": {
 				"env": {
-					"FLASK_APP": "app/app.py"
+					"FLASK_APP": "app/getter.py"
 				}
 			},
 			"python": {
