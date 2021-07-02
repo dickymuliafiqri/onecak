@@ -85,19 +85,6 @@ def main():
         if recent == i: break
         try:
             onecak(i)
-            #
-            # USED TO CHECK IF POST ALREADY INDEXED, BUT I THINK IT'S USELESS
-            #
-            # indexed = 0
-            # for indx in range(500):
-            #     try:
-            #         database_length = database.run_command(crud.posts_length)
-            #         if database.run_command("SELECT json_extract(json_value, '$.id') FROM posts WHERE id = {}".format(database_length-indx)) == i: 
-            #             indexed = 1
-            #             break
-            #     except IndexError:
-            #         pass
-            # if indexed: raise Exception('Already indexed')
             print('Success: {}{}'.format(baseUrl, i))
         except Exception as err:
             print('Failed: {}{} - {}'.format(baseUrl, i, err))

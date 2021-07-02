@@ -40,16 +40,13 @@ class OnecakAPI(Resource):
             })
         
         elif shuffle:
-            if shuffle > 10:
-                return jsonify({
-                    "message": "max entity is 10"
-                })
+            shuffle = 10 if shuffle > 10 else shuffle
             loop = 0
             while True:
                 random = randint(1, self.length)
                 data = self.database.run_command(crud.posts_get, (str(random),))
                 data = json.loads(data)
-                result.append(data[0])
+                result.append(data)
                 loop += 1
                 if loop >= shuffle: break
             return jsonify({
