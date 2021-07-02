@@ -1,7 +1,5 @@
-from os import error
 from bs4 import BeautifulSoup as bs
 from time import sleep
-from sqlite3 import Error
 import crud
 import requests
 import re
