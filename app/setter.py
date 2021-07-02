@@ -79,13 +79,14 @@ def onecak(postId):
 def main():
     recent = None
     x = 0
-    i = 49
 
     if database.run_command(crud.tasks_length) == 0:
         database.run_command(crud.task_insert, (0, 0, 0))
     last_scan = database.run_command('SELECT last_scan FROM tasks')
     if last_scan is not None:
         i = database.run_command('SELECT last_scan FROM tasks')
+
+    i = 1 if i == 0 else i
     try:
         recent = getRecent()
     except Exception:
