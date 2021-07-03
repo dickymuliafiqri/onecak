@@ -1,8 +1,8 @@
-# onecak
+# An unofficial API of 1cak.com
 
 [![Deploy to Azure](https://github.com/dickymuliafiqri/onecak/actions/workflows/azure.yml/badge.svg)](https://github.com/dickymuliafiqri/onecak/actions/workflows/azure.yml)
 [![Deploy to Heroku](https://github.com/dickymuliafiqri/onecak/actions/workflows/heroku.yml/badge.svg)](https://github.com/dickymuliafiqri/onecak/actions/workflows/heroku.yml)  
-An unofficial API of 1cak.com  
+1cak - Just For Fun is Indonesian web that provide lot of fun.  
 
 ## Endpoint
 
@@ -20,5 +20,5 @@ Thanks.
 
 ### Credit
 
-- [dickymuliafiqti](https://github.com/dickymuliafiqri)
+- [dickymuliafiqti](https://github.com/dickymuliafiqri)  
 - [1cak.com](https://1cak.com)

@@ -3,7 +3,6 @@ from time import sleep
 import crud
 import requests
 import re
-import json
 
 baseUrl = 'https://1cak.com/'
 database = crud.OnecakDB()
@@ -43,7 +42,6 @@ def onecak(postId):
             post['title']
         except KeyError:
             post = None
-            pass
 
         if not post:
             post = posts.iframe
@@ -78,8 +76,8 @@ def main():
     i = 1 if i == 0 else i
     try:
         recent = getRecent()
-    except Exception:
-        pass
+    except Exception as err:
+        print('Failed get recent post on 1cak: ', err)
 
     while True:
         if recent == i: break

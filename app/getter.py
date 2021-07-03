@@ -26,7 +26,7 @@ class OnecakAPI(Resource):
         result = []
         lol = None if self.args['lol'] == None else 1
         shuffle = 1 if self.args['shuffle'] == '' else self.args['shuffle']
-        shuffle = int(shuffle) if type(shuffle) == type('str') else shuffle
+        shuffle = int(shuffle) if isinstance(shuffle, 'str') else shuffle
 
         if lol:
             for indx in range(self.length, self.length-10, -1):
@@ -38,7 +38,7 @@ class OnecakAPI(Resource):
                 "posts": result,
                 "lastpost": self.lastPost
             })
-        
+
         elif shuffle:
             shuffle = 10 if shuffle > 10 else shuffle
             loop = 0

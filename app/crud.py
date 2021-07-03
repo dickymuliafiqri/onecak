@@ -82,9 +82,9 @@ class OnecakDB():
         self.conn = None
         self.retry_connect = 0
         while True:
-            try: 
+            try:
                 self.conn = sqlite3.connect(db_file)
-                if self.conn: 
+                if self.conn:
                     print(sqlite3.version)
                     print('Connected to ', db_file)
                     break
@@ -96,7 +96,7 @@ class OnecakDB():
                 break
             print('Retry to connect ({})'.format(self.retry_connect))
         if self.conn is None: raise 'Error while try to connect to Database'
-    
+
     def run_command(self, command, value=None):
         c = None
         result = None
