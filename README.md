@@ -7,7 +7,7 @@ An unofficial API of 1cak.com
 ## Endpoint
 
 Lol -> 10 Recent stored posts on database  
-Example: ```http://onecak.azurewebsites.net/?lol```
+Example: ```https://onecak.azurewebsites.net/?lol```
 
 Shuffle -> Select random posts from database  
 Example: ```https://onecak.herokuapp.com/?shuffle=5```
