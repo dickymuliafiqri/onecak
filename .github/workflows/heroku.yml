@@ -5,8 +5,6 @@ name: Deploy to Heroku
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
-  push:
-    paths: ["app/app.py", "Dockerfile"]
   repository_dispatch:
     types: "heroku"
 
