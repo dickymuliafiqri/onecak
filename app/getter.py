@@ -32,7 +32,7 @@ class OnecakAPI(Resource):
             for indx in range(self.length, self.length-10, -1):
                 data = self.database.run_command(crud.posts_get, (str(indx),))
                 data = json.loads(data)
-                result.append(data)
+                result.append(data[0])
             return jsonify({
                 "length": len(result),
                 "posts": result,
@@ -46,7 +46,7 @@ class OnecakAPI(Resource):
                 random = randint(1, self.length)
                 data = self.database.run_command(crud.posts_get, (str(random),))
                 data = json.loads(data)
-                result.append(data)
+                result.append(data[0])
                 loop += 1
                 if loop >= shuffle: break
             return jsonify({
