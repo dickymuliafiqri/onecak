@@ -4,9 +4,8 @@
 name: Build and deploy container app to Azure Web App - onecak
 
 on:
-  push:
-    branches:
-      - main
+  repository_dispatch:
+    types: "deploy"
   workflow_dispatch:
 
 jobs:
